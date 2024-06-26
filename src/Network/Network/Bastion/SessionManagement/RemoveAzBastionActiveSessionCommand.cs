@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Commands.Network.Bastion.SessionManagement
     using Microsoft.Azure.Commands.ResourceManager.Common.ArgumentCompleters;
     using Microsoft.Azure.Management.Internal.Resources.Utilities.Models;
     using Microsoft.Azure.Management.Network;
+    using Microsoft.Azure.Management.Network.Models;
     using Microsoft.Rest;
-    using MNM = Management.Network.Models;
 
     [Cmdlet(VerbsCommon.Remove,
         ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "Bastion" + "ActiveSession",
@@ -59,16 +59,15 @@ namespace Microsoft.Azure.Commands.Network.Bastion.SessionManagement
 
         [Parameter(
             Mandatory = true,
-            ValueFromPipeline = true,
+            ParameterSetName = BastionParameterSetNames.ByBastionObject,
             HelpMessage = "Bastion Object")]
         [ValidateNotNullOrEmpty]
         public PSBastion InputObject { get; set; }
 
         [Parameter(
-            Mandatory = false, // # Not sure
+            Mandatory = false, // Check if it is mandatory
             ValueFromPipeline = true,
-            HelpMessage = "Bastion Object")]
-        //[ValidateNotNullOrEmpty]
+            HelpMessage = "List of Session IDs to disconnect")]
         public List<string> SessionId { get; set; }
 
         public override void Execute()
@@ -93,38 +92,37 @@ namespace Microsoft.Azure.Commands.Network.Bastion.SessionManagement
 
             WriteVerbose("Found Bastion");
 
-            // # Check if this should be added
             if (!string.Equals(bastion.ProvisioningState, PSProvisioningState.Succeeded.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 throw new ValidationException($"Bastion {bastion.Name} is in {bastion.ProvisioningState} state. Please try again later.");
             }
 
-            MNM.SessionIds sessionIds;
+            SessionIds sessionIds;
 
             // # Check if this is needed
             if (this.SessionId != null && this.SessionId.Count > 0)
             {
-                sessionIds = new MNM.SessionIds(this.SessionId);
+                sessionIds = new SessionIds(this.SessionId);
             }
             else
             {
                 var activeSessionsIterable = NetworkClient.NetworkManagementClient.GetActiveSessions(this.ResourceGroupName, this.Name);
                 if (activeSessionsIterable != null)
                 {
-                    foreach (MNM.BastionActiveSession activeSession in activeSessionsIterable)
+                    foreach (BastionActiveSession activeSession in activeSessionsIterable)
                     {
                         WriteVerbose($"Found {activeSession} active sessions from SDK");
                         this.SessionId.Add(activeSession.SessionId);
                     }
                 }
-                sessionIds = new MNM.SessionIds(this.SessionId);
+                sessionIds = new SessionIds(this.SessionId);
             }
 
             List<PSBastionSessionState> psSessionStateList = new List<PSBastionSessionState>();
             var disconnectSessionsIterable = NetworkClient.NetworkManagementClient.DisconnectActiveSessions(this.ResourceGroupName, this.Name, sessionIds);
             if (disconnectSessionsIterable != null)
             {
-                foreach (MNM.BastionSessionState disconnectedSessionState in disconnectSessionsIterable)
+                foreach (BastionSessionState disconnectedSessionState in disconnectSessionsIterable)
                 {
                     WriteVerbose($"Found {disconnectedSessionState} session state from SDK");
                     PSBastionSessionState psSessionState = new PSBastionSessionState(disconnectedSessionState);

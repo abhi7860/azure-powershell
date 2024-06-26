@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Commands.Network.Bastion
     using Microsoft.Azure.Management.Network;
     using Microsoft.Azure.Management.Network.Models;
     using Microsoft.Rest;
-    using MNM = Management.Network.Models;
 
     [Cmdlet(VerbsCommon.Get,
         ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "Bastion" + "ActiveSession",
@@ -60,7 +59,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
 
         [Parameter(
             Mandatory = true,
-            ValueFromPipeline = true,
+            ParameterSetName = BastionParameterSetNames.ByBastionObject,
             HelpMessage = "Bastion Object")]
         [ValidateNotNullOrEmpty]
         public PSBastion InputObject { get; set; }
@@ -85,7 +84,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
                 throw new ItemNotFoundException(string.Format(Properties.Resources.ResourceNotFound, this.Name));
             }
 
-            WriteVerbose($"Found Bastion:\n{bastion}");
+            WriteVerbose($"Found Bastion:\n{bastion.ToString()}");
 
             // # Check if this should be added
             if (!string.Equals(bastion.ProvisioningState, PSProvisioningState.Succeeded.ToString(), StringComparison.OrdinalIgnoreCase))
@@ -97,7 +96,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
             var activeSessionsIterable = NetworkClient.NetworkManagementClient.GetActiveSessions(this.ResourceGroupName, this.Name);
             if (activeSessionsIterable != null)
             {
-                foreach (MNM.BastionActiveSession activeSession in activeSessionsIterable)
+                foreach (BastionActiveSession activeSession in activeSessionsIterable)
                 {
                     WriteVerbose($"Found {activeSession} active sessions from SDK");
                     PSBastionActiveSession psActiveSession = new PSBastionActiveSession(activeSession);
