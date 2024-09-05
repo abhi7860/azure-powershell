@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion.SessionManagement
                 throw new ItemNotFoundException(string.Format(Properties.Resources.ResourceNotFound, this.Name));
             }
 
-            WriteVerbose("Found Bastion");
+            WriteVerbose($"Found Bastion: {bastion.Name}");
 
             if (!string.Equals(bastion.ProvisioningState, PSProvisioningState.Succeeded.ToString(), StringComparison.OrdinalIgnoreCase))
             {

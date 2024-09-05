@@ -22,8 +22,9 @@ namespace Microsoft.Azure.Commands.Network.Bastion
     using Microsoft.Azure.Commands.Network.Models.Bastion;
     using Microsoft.Azure.Commands.ResourceManager.Common.ArgumentCompleters;
     using Microsoft.Azure.Commands.ResourceManager.Common.Tags;
+    using Microsoft.Azure.Management.Internal.Resources.Utilities.Models;
     using Microsoft.Azure.Management.Network;
-    using MNM = Management.Network.Models;
+    using Microsoft.Azure.Management.Network.Models;
 
     [Cmdlet(VerbsCommon.Set,
         ResourceManager.Common.AzureRMConstants.AzureRMPrefix + Constants.BastionResourceName,
@@ -34,6 +35,31 @@ namespace Microsoft.Azure.Commands.Network.Bastion
     {
         [Parameter(
             Mandatory = true,
+            ParameterSetName = BastionParameterSetNames.ByResourceGroupName + BastionParameterSetNames.ByName,
+            HelpMessage = "The resource group name where Bastion resource exists")]
+        [ResourceGroupCompleter]
+        [ValidateNotNullOrEmpty]
+        public string ResourceGroupName { get; set; }
+
+        [Alias("ResourceName", "BastionName")]
+        [Parameter(
+            Mandatory = true,
+            ParameterSetName = BastionParameterSetNames.ByResourceGroupName + BastionParameterSetNames.ByName,
+            HelpMessage = "The Bastion resource name.")]
+        [ValidateNotNullOrEmpty]
+        [ResourceNameCompleter(Constants.BastionResourceType, "ResourceGroupName")]
+        public string Name { get; set; }
+
+        [Parameter(
+           Mandatory = true,
+           ParameterSetName = BastionParameterSetNames.ByResourceId,
+           HelpMessage = "The Bastion Resource ID")]
+        [ValidateNotNullOrEmpty]
+        public string ResourceId { get; set; }
+
+        [Parameter(
+            Mandatory = true,
+            ParameterSetName = BastionParameterSetNames.ByBastionObject,
             ValueFromPipeline = true,
             HelpMessage = "Bastion Object")]
         [ValidateNotNullOrEmpty]
@@ -45,9 +71,9 @@ namespace Microsoft.Azure.Commands.Network.Bastion
             HelpMessage = "Bastion Sku")]
         [PSArgumentCompleter(PSBastionSku.Basic, PSBastionSku.Standard, PSBastionSku.Premium)]
         [ValidateSet(
-            MNM.BastionHostSkuName.Basic,
-            MNM.BastionHostSkuName.Standard,
-            MNM.BastionHostSkuName.Premium,
+            BastionHostSkuName.Basic,
+            BastionHostSkuName.Standard,
+            BastionHostSkuName.Premium,
             IgnoreCase = false)]
         public string Sku { get; set; }
 
@@ -114,13 +140,24 @@ namespace Microsoft.Azure.Commands.Network.Bastion
         public override void Execute()
         {
             base.Execute();
-            
+            if (ParameterSetName.Equals(BastionParameterSetNames.ByResourceId, StringComparison.OrdinalIgnoreCase))
+            {
+                var parsedResourceId = new ResourceIdentifier(this.ResourceId);
+                this.Name = parsedResourceId.ResourceName;
+                this.ResourceGroupName = parsedResourceId.ResourceGroupName;
+            }
+            else if (ParameterSetName.Equals(BastionParameterSetNames.ByBastionObject, StringComparison.OrdinalIgnoreCase))
+            {
+                this.Name = this.InputObject.Name;
+                this.ResourceGroupName = this.InputObject.ResourceGroupName;
+            }
+
             ConfirmAction(Force.IsPresent,
                 string.Format(Properties.Resources.OverwritingResource, InputObject.Name),
                 Properties.Resources.SettingResourceMessage,
                 InputObject.Name, () => 
                 {
-                    if (this.TryGetBastion(this.InputObject.ResourceGroupName, this.InputObject.Name, out PSBastion getBastionHost))
+                    if (this.TryGetBastion(this.ResourceGroupName, this.Name, out PSBastion getBastionHost))
                     {
                         #region SKU Validations
                         // If Sku parameter is present
@@ -184,7 +221,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
                         #endregion
 
                         //// Map to the sdk object
-                        MNM.BastionHost bastionHostModel = NetworkResourceManagerProfile.Mapper.Map<MNM.BastionHost>(this.InputObject);
+                        BastionHost bastionHostModel = NetworkResourceManagerProfile.Mapper.Map<BastionHost>(this.InputObject);
                         //// PS does not allow plurals which is why there is a mismatch in property name and hence the below line
                         bastionHostModel.ScaleUnits = this.InputObject.ScaleUnit;
                         bastionHostModel.Tags = TagsConversionHelper.CreateTagDictionary(this.Tag, validate: true);

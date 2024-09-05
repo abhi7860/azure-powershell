@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
     using Microsoft.Azure.Commands.ResourceManager.Common.Tags;
     using Microsoft.Azure.Management.Internal.Resources.Utilities.Models;
     using Microsoft.Azure.Management.Network;
-    using MNM = Management.Network.Models;
+    using Microsoft.Azure.Management.Network.Models;
 
     [Cmdlet(VerbsCommon.New,
        ResourceManager.Common.AzureRMConstants.AzureRMPrefix + Constants.BastionResourceName,
@@ -182,9 +182,9 @@ namespace Microsoft.Azure.Commands.Network.Bastion
             HelpMessage = "The Bastion Sku Tier")]
         [PSArgumentCompleter(PSBastionSku.Basic, PSBastionSku.Standard, PSBastionSku.Premium)]
         [ValidateSet(
-            MNM.BastionHostSkuName.Basic,
-            MNM.BastionHostSkuName.Standard,
-            MNM.BastionHostSkuName.Premium,
+            BastionHostSkuName.Basic,
+            BastionHostSkuName.Standard,
+            BastionHostSkuName.Premium,
             IgnoreCase = false)]
         public string Sku { get; set; }
 
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
             }
 
             //// Map to the sdk object
-            var BastionModel = NetworkResourceManagerProfile.Mapper.Map<MNM.BastionHost>(bastion);
+            var BastionModel = NetworkResourceManagerProfile.Mapper.Map<BastionHost>(bastion);
             //// PS does not allow plurals which is why there is a mismatch in property name and hence the below line
             BastionModel.ScaleUnits = bastion.ScaleUnit;
             BastionModel.Tags = TagsConversionHelper.CreateTagDictionary(this.Tag, validate: true);

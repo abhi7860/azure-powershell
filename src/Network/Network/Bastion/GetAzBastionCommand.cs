@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
         [Parameter(
             Mandatory = true,
             ParameterSetName = BastionParameterSetNames.ByResourceGroupName + BastionParameterSetNames.ByName,
-            HelpMessage = "The resource group name where bastion resource exists.")]
+            HelpMessage = "The resource group name where Bastion resource exists.")]
         [ResourceGroupCompleter]
         [ValidateNotNullOrEmpty]
         [SupportsWildcards]
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
         [Parameter(
            Mandatory = true,
            ParameterSetName = BastionParameterSetNames.ByResourceId,
-           HelpMessage = "The bastion Azure resource Id")]
+           HelpMessage = "The Bastion Resource ID")]
         [ValidateNotNullOrEmpty]
         public string ResourceId { get; set; }
 

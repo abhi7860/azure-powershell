@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion
                 throw new ItemNotFoundException(string.Format(Properties.Resources.ResourceNotFound, this.Name));
             }
 
-            WriteVerbose($"Found Bastion:\n{bastion.ToString()}");
+            WriteVerbose($"Found Bastion: {bastion.Name}");
 
             // # Check if this should be added
             if (!string.Equals(bastion.ProvisioningState, PSProvisioningState.Succeeded.ToString(), StringComparison.OrdinalIgnoreCase))
