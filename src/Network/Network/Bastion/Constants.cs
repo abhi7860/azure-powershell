@@ -28,5 +28,8 @@ namespace Microsoft.Azure.Commands.Network.Bastion
 
         // Shareable Link
         internal const string ShareableLink = "ShareableLink";
+
+        // Session Management
+        internal const string ActiveSession = "ActiveSession";
     }
 }

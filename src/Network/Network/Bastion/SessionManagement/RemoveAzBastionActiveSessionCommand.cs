@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Commands.Network.Bastion.SessionManagement
     using Microsoft.Rest;
 
     [Cmdlet(VerbsCommon.Remove,
-        ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "Bastion" + "ActiveSession",
+        ResourceManager.Common.AzureRMConstants.AzureRMPrefix + Constants.BastionResourceName + Constants.ActiveSession,
         DefaultParameterSetName = BastionParameterSetNames.ByBastionObject,
         SupportsShouldProcess = true),
         OutputType(typeof(List<PSBastionSessionState>))]
